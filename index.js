@@ -10,16 +10,38 @@ const isDomainAvailable = require('./db/isDomainAvailable');
 const createNewWebsite = require('./db/createNewWebsite');
 const createNewPermission = require('./db/createNewPermission');
 const addFileToDb = require('./db/addFileToDb');
+const getStorage = require('./storage/getStorage');
+const copyFileFromSource = require('./storage/copyFileFromSource');
 const getAuthorization = require('./services/getAuthorization');
 
 let connection;
 let firestore;
+let storage;
 
-const publishNewWebsiteStep = async (req, res) => {};
+const publishNewWebsiteStep = async (req, res) => {
+  res.status(201);  // send CREATED
+  res.send({
+    id: req.websiteId,
+    name: req.body.name,
+    domain: req.body.domain,
+    favicon: '',
+    storage: 600,
+    createdAt: req.websiteCreatedAt,
+    permission: 'administrator'
+  });
+};
 
 const uploadFilesToBucketStep = async (req, res) => {
   try {
-    
+    const websiteId = req.websiteId;
+    const websiteFiles = req.websiteFiles;
+    storage = getStorage(storage);
+    await copyFileFromSource(storage, 'templates/index.ejs', websiteId, `templates/${websiteFiles.templateIndexId}`);
+    await copyFileFromSource(storage, 'templates/pages.ejs', websiteId, `templates/${websiteFiles.templatePagesId}`);
+    await copyFileFromSource(storage, 'templates/header.ejs', websiteId, `templates/${websiteFiles.templateHeaderId}`);
+    await copyFileFromSource(storage, 'templates/footer.ejs', websiteId, `templates/${websiteFiles.templateFooterId}`);
+    await copyFileFromSource(storage, 'pages/about.ejs', websiteId, `pages/${websiteFiles.pageAboutId}`);
+    publishNewWebsiteStep(req, res);
   } catch (error) {
     console.error(error);
     res.status(401);
@@ -39,12 +61,13 @@ const createFilesToDbStep = async (req, res) => {
     const templateFooterRef = await addFileToDb(firestore, websiteId, 'template', 'footer.ejs', timestamp);
     const pageAboutRef = await addFileToDb(firestore, websiteId, 'page', 'about.ejs', timestamp, /** url */ 'about', /** title */ 'About page');
     // populate
+    req.websiteCreatedAt = timestamp;
     req.websiteFiles = {
-      templateIndex: templateIndexRef.id,
-      templatePages: templatePagesRef.id,
-      templateHeader: templateHeaderRef.id,
-      templateFooter: templateFooterRef.id,
-      pageAbout: pageAboutRef.id,
+      templateIndexId: templateIndexRef.id,
+      templatePagesId: templatePagesRef.id,
+      templateHeaderId: templateHeaderRef.id,
+      templateFooterId: templateFooterRef.id,
+      pageAboutId: pageAboutRef.id,
     };
     uploadFilesToBucketStep(req, res);
   } catch (error) {
@@ -112,7 +135,8 @@ const getTokenStep = (req, res) => {
   } else {
     // populate it
     req.userToken = myAuthentication.token;
-    getAuthorizationStep(req, res);
+    // getAuthorizationStep(req, res);
+    createNewWebsiteStep(req, res); /** IMPORTANT */
   }
 };
 
