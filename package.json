@@ -1,0 +1,28 @@
+{
+  "name": "post-websites",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sherpon/microservices-post-websites.git"
+  },
+  "author": "Bruce Grover Lee",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sherpon/microservices-post-websites/issues"
+  },
+  "homepage": "https://github.com/sherpon/microservices-post-websites#readme",
+  "dependencies": {
+    "axios": "^0.19.0",
+    "firebase-admin": "^8.0.0",
+    "mysql": "^2.17.1",
+    "uuid": "^3.3.2"
+  },
+  "devDependencies": {
+    "jest": "^24.8.0"
+  }
+}
