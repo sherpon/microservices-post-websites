@@ -4,21 +4,55 @@
 require('./utilities/getEnv')();
 
 const getToken = require('./utilities/getToken');
-const getFirebase = require('./firebase/getFirebase');
 const getConnection = require('./db/getConnection');
+const getFirestore = require('./db/getFirestore');
 const isDomainAvailable = require('./db/isDomainAvailable');
 const createNewWebsite = require('./db/createNewWebsite');
 const createNewPermission = require('./db/createNewPermission');
+const addFileToDb = require('./db/addFileToDb');
 const getAuthorization = require('./services/getAuthorization');
 
 let connection;
-let firebase;
+let firestore;
 
 const publishNewWebsiteStep = async (req, res) => {};
 
-const uploadFilesToBucketStep = async (req, res) => {};
+const uploadFilesToBucketStep = async (req, res) => {
+  try {
+    
+  } catch (error) {
+    console.error(error);
+    res.status(401);
+    res.end();  // send no content
+  }
+};
 
-const createFilesToDbStep = async (req, res) => {};
+const createFilesToDbStep = async (req, res) => {
+  try {
+    const websiteId = req.websiteId;
+    firestore = getFirestore(firestore);
+    const timestamp = firestore.Timestamp.now();
+    await firestore.collection('websites').doc(websiteId).set({ createdAt: timestamp });
+    const templateIndexRef = await addFileToDb(firestore, websiteId, 'template', 'index.ejs', timestamp);
+    const templatePagesRef = await addFileToDb(firestore, websiteId, 'template', 'pages.ejs', timestamp);
+    const templateHeaderRef = await addFileToDb(firestore, websiteId, 'template', 'header.ejs', timestamp);
+    const templateFooterRef = await addFileToDb(firestore, websiteId, 'template', 'footer.ejs', timestamp);
+    const pageAboutRef = await addFileToDb(firestore, websiteId, 'page', 'about.ejs', timestamp, /** url */ 'about', /** title */ 'About page');
+    // populate
+    req.websiteFiles = {
+      templateIndex: templateIndexRef.id,
+      templatePages: templatePagesRef.id,
+      templateHeader: templateHeaderRef.id,
+      templateFooter: templateFooterRef.id,
+      pageAbout: pageAboutRef.id,
+    };
+    uploadFilesToBucketStep(req, res);
+  } catch (error) {
+    console.error(error);
+    res.status(401);
+    res.end();  // send no content
+  }
+};
 
 const createNewPermissionStep = async (req, res) => {
   try {
@@ -85,7 +119,6 @@ const getTokenStep = (req, res) => {
 const isDomainAvailableStep = async (req, res) => {
   const domain = req.body.domain;
   try {
-    firebase = getFirebase(firebase);
     connection = getConnection(connection);
     const isAvailable = await isDomainAvailable(connection, domain);
     if (isAvailable) {
