@@ -3,6 +3,8 @@
 // Get Development Env
 require('./utilities/getEnv')();
 
+const Firestore = require('@google-cloud/firestore');
+
 const getToken = require('./utilities/getToken');
 const getConnection = require('./db/getConnection');
 const getFirestore = require('./db/getFirestore');
@@ -53,7 +55,7 @@ const createFilesToDbStep = async (req, res) => {
   try {
     const websiteId = req.websiteId;
     firestore = getFirestore(firestore);
-    const timestamp = firestore.Timestamp.now();
+    const timestamp = Firestore.Timestamp.now();
     await firestore.collection('websites').doc(websiteId).set({ createdAt: timestamp });
     const templateIndexRef = await addFileToDb(firestore, websiteId, 'template', 'index.ejs', timestamp);
     const templatePagesRef = await addFileToDb(firestore, websiteId, 'template', 'pages.ejs', timestamp);

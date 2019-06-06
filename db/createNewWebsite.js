@@ -6,7 +6,7 @@ const createNewWebsite = (connection, name, domain) => {
     const sql = `
     INSERT INTO Websites
     (id, name, favicon, domain, storage, createdAt)
-    VALUES ('${websiteId}','${name}','','${domain}',0, CURRENT_TIMESTAMP)
+    VALUES ('${websiteId}','${name}','','${domain}',600, CURRENT_TIMESTAMP)
     `;
     connection.query(sql, (error, results, fields) => {
       if (error) {

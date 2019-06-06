@@ -24,9 +24,9 @@ const isDomainAvailable = (connection, domain) => {
 
       // connected!
       if (results.length===0) {
-        resolve(false);
-      } else {
         resolve(true);
+      } else {
+        resolve(false);
       }
     });
 
