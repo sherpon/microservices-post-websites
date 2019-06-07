@@ -15,22 +15,41 @@ const addFileToDb = require('./db/addFileToDb');
 const getStorage = require('./storage/getStorage');
 const copyFileFromSource = require('./storage/copyFileFromSource');
 const getAuthorization = require('./services/getAuthorization');
+const virtualhostCreator = require('./services/virtualhostCreator');
 
 let connection;
 let firestore;
 let storage;
 
 const publishNewWebsiteStep = async (req, res) => {
-  res.status(201);  // send CREATED
-  res.send({
-    id: req.websiteId,
-    name: req.body.name,
-    domain: req.body.domain,
-    favicon: '',
-    storage: 600,
-    createdAt: req.websiteCreatedAt,
-    permission: 'administrator'
-  });
+  try {
+    const config = {
+      id: req.websiteId,
+      domain: req.body.domain,
+      expiresAt: 4102462800000  // TEMPORALLY 4102462800000 Fri Jan 01 2100 00:00:00 GMT-0500 (Peru Standard Time)
+    };
+    const response = await virtualhostCreator(config);
+    if (response.status===201) {
+      res.status(201);  // send CREATED
+      res.send({
+        id: req.websiteId,
+        name: req.body.name,
+        domain: req.body.domain,
+        favicon: '',
+        storage: process.env.WEBSITE_STORAGE_INIT,
+        createdAt: req.websiteCreatedAt,
+        permission: 'administrator'
+      });
+    } else {
+      console.error('the virtualhost request failed.');
+      res.status(401);
+      res.end();  // send no content
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(401);
+    res.end();  // send no content
+  }
 };
 
 const uploadFilesToBucketStep = async (req, res) => {
@@ -137,8 +156,8 @@ const getTokenStep = (req, res) => {
   } else {
     // populate it
     req.userToken = myAuthentication.token;
-    // getAuthorizationStep(req, res);
-    createNewWebsiteStep(req, res); /** IMPORTANT */
+    getAuthorizationStep(req, res);
+    // createNewWebsiteStep(req, res); /** IMPORTANT */
   }
 };
 
