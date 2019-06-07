@@ -37,7 +37,7 @@ const publishNewWebsiteStep = async (req, res) => {
         domain: req.body.domain,
         favicon: '',
         storage: process.env.WEBSITE_STORAGE_INIT,
-        createdAt: new Date(req.websiteCreatedAt),
+        createdAt: new Date(req.websiteCreatedAt._seconds * 1000),
         permission: 'administrator'
       });
     } else {
