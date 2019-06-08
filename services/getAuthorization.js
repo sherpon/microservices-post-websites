@@ -8,7 +8,7 @@ const axios = require('axios');
 const getAuthorization = (token, userId, websiteId) => {
   return axios({
     method: 'post',
-    url: `${process.env.MICROSERVICES_ENDPOINT}/getAuthorization`,
+    baseURL: `${process.env.MICROSERVICES_ENDPOINT}/getAuthorization`,
     headers: {
       'Authorization': `Bearer ${token}`
     },
