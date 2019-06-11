@@ -76,6 +76,7 @@ const createFilesToDbStep = async (req, res) => {
     const websiteId = req.websiteId;
     firestore = getFirestore(firestore);
     const timestamp = Firestore.Timestamp.now();  // return an object like this { "_seconds": 1559856428, "_nanoseconds": 858000000 }
+    // create website instance in firestore db
     await firestore.collection('websites').doc(websiteId).set({ createdAt: timestamp });
     const templateIndexRef = await addFileToDb(firestore, websiteId, 'template', 'index.ejs', timestamp);
     const templatePagesRef = await addFileToDb(firestore, websiteId, 'template', 'pages.ejs', timestamp);
