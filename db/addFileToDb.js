@@ -16,12 +16,13 @@ const addFileToDb = (firestore, websiteId, type, filename, timestamp, url, title
         filename: filename,
         createdAt: timestamp,
         url,
-        keywords:'',
         title,
+        keywords:'',
         description:'',
+        themeColor: '',
         meta:'',
-        scripts:'',
-        styles:'',
+        script:'',
+        style:'',
       });
       break;
   
