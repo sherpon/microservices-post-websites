@@ -74,8 +74,7 @@ const uploadFilesToBucketStep = async (req, res) => {
 const createFilesToDbStep = async (req, res) => {
   try {
     const websiteId = req.websiteId;
-    firestore = getFirestore(firestore);
-    const timestamp = Firestore.Timestamp.now();  // return an object like this { "_seconds": 1559856428, "_nanoseconds": 858000000 }
+    const timestamp = req.websiteCreatedAt;  // return an object like this { "_seconds": 1559856428, "_nanoseconds": 858000000 }
     // create website instance in firestore db
     await firestore.collection('websites').doc(websiteId).set({ createdAt: timestamp });
     const templateIndexRef = await addFileToDb(firestore, websiteId, 'template', 'index.ejs', timestamp);
@@ -84,7 +83,6 @@ const createFilesToDbStep = async (req, res) => {
     const templateFooterRef = await addFileToDb(firestore, websiteId, 'template', 'footer.ejs', timestamp);
     const pageAboutRef = await addFileToDb(firestore, websiteId, 'page', 'about.ejs', timestamp, /** url */ 'about', /** title */ 'About page');
     // populate
-    req.websiteCreatedAt = timestamp;
     req.websiteFiles = {
       templateIndexId: templateIndexRef.id,
       templatePagesId: templatePagesRef.id,
@@ -100,28 +98,18 @@ const createFilesToDbStep = async (req, res) => {
   }
 };
 
-const createNewPermissionStep = async (req, res) => {
-  try {
-    const userId = req.query.userId;
-    const websiteId = req.websiteId;
-    const permissionType = 'administrator';
-    await createNewPermission(connection, userId, websiteId, permissionType);
-    createFilesToDbStep(req, res);
-  } catch (error) {
-    console.error(error);
-    res.status(401);
-    res.end();  // send no content
-  }
-};
-
 const createNewWebsiteStep = async (req, res) => {
   try {
+    const userId = req.query.userId;
     const name = req.body.name;
     const domain = req.body.domain;
-    const websiteId = await createNewWebsite(connection, name, domain);
+    const timestamp = Firestore.Timestamp.now();  // return an object like this { "_seconds": 1559856428, "_nanoseconds": 858000000 }
+    const websiteId = await createNewWebsite(firestore, name, domain, userId, timestamp);
     // populate
     req.websiteId = websiteId;
-    createNewPermissionStep(req, res);
+    req.websiteCreatedAt = timestamp;
+    // createNewPermissionStep(req, res);
+    createFilesToDbStep(req, res);
   } catch (error) {
     console.error(error);
     res.status(401);
@@ -165,10 +153,10 @@ const getTokenStep = (req, res) => {
 };
 
 const isDomainAvailableStep = async (req, res) => {
-  const domain = req.body.domain;
   try {
-    connection = getConnection(connection);
-    const isAvailable = await isDomainAvailable(connection, domain);
+    const domain = req.body.domain;
+    firestore = getFirestore(firestore);
+    const isAvailable = await isDomainAvailable(firestore, domain);
     if (isAvailable) {
       // is available
       getTokenStep(req, res);

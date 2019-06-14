@@ -1,11 +1,36 @@
 
 /**
  * 
- * @param {Object} connection 
- * @param {String} domain 
+ * @param {object} firestore 
+ * @param {string} domain 
  * @returns {Promise} - returns true or false
  */
-const isDomainAvailable = (connection, domain) => {
+const isDomainAvailable = (firestore, domain) => {
+  return new Promise((resolve, reject) => {
+    if (domain === undefined) {
+      resolve(false);
+    }
+
+    firestore.collection('websites').where('domain', '==', domain)
+    .get()
+    .then(snapshot => {
+      if (snapshot.empty) {
+        resolve(true);
+      } else {
+        resolve(false);
+      }
+    })
+    .catch(err => {
+      console.error('Error getting documents', err);
+      reject(err);
+    });
+  });
+};
+
+module.exports = isDomainAvailable;
+
+/**
+ * 
   return new Promise((resolve, reject) => {
     if (domain === undefined) {
       resolve(false);
@@ -31,6 +56,4 @@ const isDomainAvailable = (connection, domain) => {
     });
 
   });
-};
-
-module.exports = isDomainAvailable;
+ */

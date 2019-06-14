@@ -1,7 +1,27 @@
-const uuidv1 = require('uuid/v1');
 
-const createNewWebsite = (connection, name, domain) => {
+const createNewWebsite = (firestore, name, domain, userId, timestamp) => {
   return new Promise((resolve, reject) => {
+    let permissions = {};
+    permissions[userId] = 'administrator';
+
+    firestore.collection('websites').add({
+      name,
+      domain,
+      favicon: '',
+      storage: process.env.WEBSITE_STORAGE_INIT,
+      permissions,
+      createdAt: timestamp,
+    }).then(ref => {
+      // console.log('Added document with ID: ', ref.id);
+      resolve(ref.id);
+    });
+  });
+};
+
+module.exports = createNewWebsite;
+
+/**
+ * return new Promise((resolve, reject) => {
     const websiteId = uuidv1();
     const sql = `
     INSERT INTO Websites
@@ -17,6 +37,4 @@ const createNewWebsite = (connection, name, domain) => {
       resolve(websiteId);
     });
   });
-};
-
-module.exports = createNewWebsite;
+ */
