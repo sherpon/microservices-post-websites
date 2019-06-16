@@ -54,7 +54,6 @@ const publishNewWebsiteStep = async (req, res) => {
 const uploadFilesToBucketStep = async (req, res) => {
   try {
     const websiteId = req.websiteId;
-    const websiteFiles = req.websiteFiles;
     storage = getStorage(storage);
     await copyFileFromSource(storage, 'templates/index.ejs', websiteId, 'templates/index.ejs');
     await copyFileFromSource(storage, 'templates/pages.ejs', websiteId, 'templates/pages.ejs');
