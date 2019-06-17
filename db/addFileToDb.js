@@ -10,7 +10,7 @@ const addFileToDb = (firestore, websiteId, type, filename, timestamp, url, title
       break;
 
     case 'page':
-      return websiteRef.collection('files').doc(filename).add({
+      return websiteRef.collection('files').doc(filename).set({
         type: type,
         createdAt: timestamp,
         url,
