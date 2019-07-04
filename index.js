@@ -6,8 +6,10 @@ require('./utilities/getEnv')();
 const Firestore = require('@google-cloud/firestore');
 
 const getToken = require('./utilities/getToken');
+const getExpiresAtDate = require('./utilities/getExpiresAtDate');
 const getFirestore = require('./db/getFirestore');
 const isDomainAvailable = require('./db/isDomainAvailable');
+const paymentProcess = require('./payment/paymentProcess');
 const createNewWebsite = require('./db/createNewWebsite');
 const addFileToDb = require('./db/addFileToDb');
 const getStorage = require('./storage/getStorage');
@@ -15,7 +17,6 @@ const copyFileFromSource = require('./storage/copyFileFromSource');
 const getAuthorization = require('./services/getAuthorization');
 const virtualhostCreator = require('./services/virtualhostCreator');
 
-let connection;
 let firestore;
 let storage;
 
@@ -23,8 +24,11 @@ const publishNewWebsiteStep = async (req, res) => {
   try {
     const config = {
       id: req.websiteId,
+      name: req.body.name,
       domain: req.body.domain,
-      expiresAt: new Date(4102462800000)  // TEMPORALLY 4102462800000 Fri Jan 01 2100 00:00:00 GMT-0500 (Peru Standard Time)
+      type: req.body.type,
+      favicon: '',
+      expiresAt: new Date(req.websiteExpiresAt._seconds * 1000)  // TEMPORALLY 4102462800000 Fri Jan 01 2100 00:00:00 GMT-0500 (Peru Standard Time)
     };
     const status = await virtualhostCreator(config);
     if (status===201) {
@@ -33,9 +37,11 @@ const publishNewWebsiteStep = async (req, res) => {
         id: req.websiteId,
         name: req.body.name,
         domain: req.body.domain,
+        type: req.body.type,
         favicon: '',
         storage: process.env.WEBSITE_STORAGE_INIT,
         createdAt: new Date(req.websiteCreatedAt._seconds * 1000),
+        expiresAt: new Date(req.websiteExpiresAt._seconds * 1000),
         permission: 'administrator'
       });
     } else {
@@ -92,13 +98,31 @@ const createNewWebsiteStep = async (req, res) => {
     const userId = req.query.userId;
     const name = req.body.name;
     const domain = req.body.domain;
+    const type = req.body.type;
+    const paymentProcessor = req.websitePaymentProcessor;
     const timestamp = Firestore.Timestamp.now();  // return an object like this { "_seconds": 1559856428, "_nanoseconds": 858000000 }
-    const websiteId = await createNewWebsite(firestore, name, domain, userId, timestamp);
+    const expiresAt = Firestore.Timestamp.fromDate(getExpiresAtDate());
+    const websiteId = await createNewWebsite(firestore, name, domain, type, paymentProcessor, userId, timestamp, expiresAt);
     // populate
     req.websiteId = websiteId;
     req.websiteCreatedAt = timestamp;
+    req.websiteExpiresAt = expiresAt;
     // createNewPermissionStep(req, res);
     createFilesToDbStep(req, res);
+  } catch (error) {
+    console.error(error);
+    res.status(401);
+    res.end();  // send no content
+  }
+};
+
+const paymentProcessStep = async (req, res) => {
+  try {
+    const newReq = await paymentProcess(req, firestore);
+    // poppulate
+    // req.userPaymentProcessor
+    // req.websitePaymentProcessor
+    createNewWebsiteStep(newReq, res);
   } catch (error) {
     console.error(error);
     res.status(401);
@@ -113,7 +137,8 @@ const getAuthorizationStep = async (req, res) => {
     const response = await getAuthorization(token, userId);
     if (response.status===202) {
       // authorized
-      createNewWebsiteStep(req, res);
+      // createNewWebsiteStep(req, res);
+      paymentProcessStep(req, res);
     } else {
       // unauthorized
       console.log('the user ' + userId + ' is unauthorized');

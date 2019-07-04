@@ -1,5 +1,5 @@
 
-const createNewWebsite = (firestore, name, domain, userId, timestamp) => {
+const createNewWebsite = (firestore, name, domain, type, paymentProcessor, userId, timestamp, expiresAt) => {
   return new Promise((resolve, reject) => {
     let permissions = {};
     permissions[userId] = 'administrator';
@@ -7,10 +7,13 @@ const createNewWebsite = (firestore, name, domain, userId, timestamp) => {
     firestore.collection('websites').add({
       name,
       domain,
+      type,
+      paymentProcessor,
       favicon: '',
       storage: process.env.WEBSITE_STORAGE_INIT,
       permissions,
       createdAt: timestamp,
+      expiresAt,
     }).then(ref => {
       // console.log('Added document with ID: ', ref.id);
       resolve(ref.id);
