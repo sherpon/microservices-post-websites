@@ -138,7 +138,7 @@ const culqiCreateSubscription = (cardId, planId) => {
  * const newReq = await paymentProcess(req);
  */
 const culqiPaymentProcess = (req, firestore) => {
-  return new Promise((resolve, reject) => {
+  return new Promise( async (resolve, reject) => {
     try {
       let paymentProcessorParameters = req.body.paymentProcessorParameters;
       if (paymentProcessorParameters.customerId==='') {
