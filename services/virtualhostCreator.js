@@ -8,7 +8,7 @@ const virtualhostCreator = (config) => {
   return new Promise((resolve, reject) => {
     const configuration = {
       method: 'post',
-      baseURL: `${process.env.VIRTUALHOST_CREATOR_ENDPOINT}`,
+      baseURL: `${process.env.CREATOR_ENDPOINT}`,
       headers: {},
       data: config
     };
