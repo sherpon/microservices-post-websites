@@ -10,6 +10,12 @@ const culqiPaymentProcess = require('./culqi');
  */
 const paymentProcess = (req, firestore) => { 
   switch (process.env.PAYMENT_PROCESSOR) {
+    case 'FREE':
+      return new Promise((resolve, reject) => { 
+        req.websitePaymentProcessor = {};
+        resolve(req); 
+      });
+      
     case 'CULQI':
       return culqiPaymentProcess(req, firestore);
   

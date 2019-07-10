@@ -10,7 +10,7 @@ const createNewWebsite = (firestore, name, domain, type, paymentProcessor, userI
       type,
       paymentProcessor,
       favicon: '',
-      storage: process.env.WEBSITE_STORAGE_INIT,
+      storage: parseInt(process.env.WEBSITE_STORAGE_INIT),
       permissions,
       createdAt: timestamp,
       expiresAt,

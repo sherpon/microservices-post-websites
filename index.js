@@ -39,7 +39,7 @@ const publishNewWebsiteStep = async (req, res) => {
         domain: req.body.domain,
         type: req.body.type,
         favicon: '',
-        storage: process.env.WEBSITE_STORAGE_INIT,
+        storage: parseInt(process.env.WEBSITE_STORAGE_INIT),
         createdAt: new Date(req.websiteCreatedAt._seconds * 1000),
         expiresAt: new Date(req.websiteExpiresAt._seconds * 1000),
         permission: 'administrator'
