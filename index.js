@@ -61,11 +61,12 @@ const uploadFilesToBucketStep = async (req, res) => {
   try {
     const websiteId = req.websiteId;
     storage = getStorage(storage);
-    await copyFileFromSource(storage, 'templates/index.ejs', websiteId, 'templates/index.ejs');
-    await copyFileFromSource(storage, 'templates/pages.ejs', websiteId, 'templates/pages.ejs');
-    await copyFileFromSource(storage, 'templates/header.ejs', websiteId, 'templates/header.ejs');
-    await copyFileFromSource(storage, 'templates/footer.ejs', websiteId, 'templates/footer.ejs');
-    await copyFileFromSource(storage, 'pages/about.ejs', websiteId, 'pages/about.ejs');
+    await copyFileFromSource(storage, 'templates/index.ejs', websiteId, 'templates/index');
+    await copyFileFromSource(storage, 'templates/pages.ejs', websiteId, 'templates/pages');
+    await copyFileFromSource(storage, 'templates/header.ejs', websiteId, 'templates/header');
+    await copyFileFromSource(storage, 'templates/footer.ejs', websiteId, 'templates/footer');
+    await copyFileFromSource(storage, 'pages/home.ejs', websiteId, 'pages/home');
+    await copyFileFromSource(storage, 'pages/about.ejs', websiteId, 'pages/about');
     publishNewWebsiteStep(req, res);
   } catch (error) {
     console.error(error);
@@ -80,11 +81,12 @@ const createFilesToDbStep = async (req, res) => {
     const timestamp = req.websiteCreatedAt;  // return an object like this { "_seconds": 1559856428, "_nanoseconds": 858000000 }
     // create website instance in firestore db
     // await firestore.collection('websites').doc(websiteId).set({ createdAt: timestamp });
-    await addFileToDb(firestore, websiteId, 'template', 'index.ejs', timestamp);
-    await addFileToDb(firestore, websiteId, 'template', 'pages.ejs', timestamp);
-    await addFileToDb(firestore, websiteId, 'template', 'header.ejs', timestamp);
-    await addFileToDb(firestore, websiteId, 'template', 'footer.ejs', timestamp);
-    await addFileToDb(firestore, websiteId, 'page', 'about.ejs', timestamp, /** url */ 'about', /** title */ 'About page');
+    await addFileToDb(firestore, websiteId, 'template', 'index', timestamp);
+    await addFileToDb(firestore, websiteId, 'template', 'pages', timestamp);
+    await addFileToDb(firestore, websiteId, 'template', 'header', timestamp);
+    await addFileToDb(firestore, websiteId, 'template', 'footer', timestamp);
+    await addFileToDb(firestore, websiteId, 'page', 'home', timestamp, /** url */ 'home', /** title: website's name */ req.body.name);
+    await addFileToDb(firestore, websiteId, 'page', 'about', timestamp, /** url */ 'about', /** title */ 'About page');
     uploadFilesToBucketStep(req, res);
   } catch (error) {
     console.error(error);
